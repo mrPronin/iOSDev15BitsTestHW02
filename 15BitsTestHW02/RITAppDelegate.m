@@ -7,6 +7,7 @@
 //
 
 #import "RITAppDelegate.h"
+#import "RITStudent.h"
 
 @implementation RITAppDelegate
 
@@ -16,7 +17,91 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+    NSMutableArray* students        = [NSMutableArray array];
+    NSMutableArray* humanities      = [NSMutableArray array];
+    NSMutableArray* nonHumanities   = [NSMutableArray array];
+    
+    for (int i = 0; i < 10; i++) {
+        
+        NSInteger categories = 0;
+        
+        for (int j = 0; j < 25; j++) {
+            categories = categories | (arc4random() % 2 << j);
+        }
+        
+        switch (arc4random() % 2) {
+            case 0:
+                // leaving only humanities sciences
+                categories = categories & RITScienceDivideHumatinies;
+                break;
+                
+            case 1:
+                // leavin onle non humanities sciences
+                categories = categories & RITScienceDivideNonHumanities;
+                break;
+                
+        }
+        
+        RITStudent* student = [RITStudent
+                               studentWithName:[NSString stringWithFormat:@"Student%02d", i + 1]
+                               andSciencesCategories:categories];
+        
+        [students addObject:student];
+    };
+    
+    NSInteger developersCount = 0;
+    
+    for (RITStudent* student in students) {
+        if (student.sciencesCategories & RITScienceDivideHumatinies) {
+            [humanities addObject:student];
+        } else if (student.sciencesCategories & RITScienceDivideNonHumanities) {
+            [nonHumanities addObject:student];
+        }
+        
+        if (student.sciencesCategories & RITScienceDivideSoftwareDevelopers) {
+            developersCount++;
+        }
+    }
+    
+    NSLog(@"-----------------------------------Humanities-----------------------------------");
+    NSLog(@"%@", humanities);
+    for (RITStudent* student in humanities) {
+        NSLog(@"Binary: %@", [self binaryStringWithInteger02:student.sciencesCategories]);
+        NSLog(@"%@", [student getSciencesCategories]);
+        NSLog(@"\n");
+    }
+    
+    NSLog(@"-----------------------------------NonHumanities--------------------------------");
+    NSLog(@"%@", nonHumanities);
+    for (RITStudent* student in nonHumanities) {
+        NSLog(@"Binary: %@", [self binaryStringWithInteger02:student.sciencesCategories]);
+        NSLog(@"%@", [student getSciencesCategories]);
+        NSLog(@"\n");
+    }
+    
+    NSLog(@"Developers count: %d", developersCount);
+    
     return YES;
+}
+
+- (NSString*) binaryStringWithInteger02:(NSInteger) value {
+    NSMutableString*    string = [NSMutableString string];
+    
+    for (int i = sizeof(value)*8 - 1; i >= 0; i--) {
+        [string appendString:(value >> i) & 1 ? @"1" : @"0"];
+        [string appendString:(i % 4) ? @"" : @" " ];
+    }
+    return string;
+}
+
+- (NSString*) binaryStringWithInteger01:(NSInteger) value {
+    NSMutableString*    string = [NSMutableString string];
+    while (value) {
+        [string insertString:(value & 1) ? @"1" : @"0" atIndex:0];
+        value = value >> 1;
+    }
+    return string;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
